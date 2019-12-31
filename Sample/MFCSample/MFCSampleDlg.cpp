@@ -119,6 +119,7 @@ static CHARFORMAT c_errorCharFormat =
 
 CMFCSampleDlg::CMFCSampleDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CMFCSampleDlg::IDD, pParent)
+	, m_strFileName_app(_T(""))
 {
 	//{{AFX_DATA_INIT(CMFCSampleDlg)
 	m_strFileName = _T("");
@@ -148,6 +149,11 @@ void CMFCSampleDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT1, m_strFileName);
 
 	//}}AFX_DATA_MAP
+	DDX_Text(pDX, IDC_EDIT3, m_strFileName_app);
+	DDX_Control(pDX, IDC_EDIT5, m_EdAPPVersion);
+	DDX_Control(pDX, IDC_CHECK4, m_checkAllowUp);
+	DDX_Control(pDX, IDC_CHECK5, m_btnUpAddr);
+	DDX_Control(pDX, IDC_EDIT6, m_edBootAddr);
 }
 
 BEGIN_MESSAGE_MAP(CMFCSampleDlg, CDialog)
@@ -170,6 +176,7 @@ BEGIN_MESSAGE_MAP(CMFCSampleDlg, CDialog)
 	//}}AFX_MSG_MAP
 	ON_BN_CLICKED(IDC_CHECK1, &CMFCSampleDlg::OnBnClickedCheck1)
 	ON_BN_CLICKED(IDC_CHECK2, &CMFCSampleDlg::OnBnClickedCheck2)
+	ON_BN_CLICKED(IDC_BUTTON6, &CMFCSampleDlg::OnBnClickedButton6)
 END_MESSAGE_MAP()
 
 long  CMFCSampleDlg::DisplayMessage(const char *szMessage)
@@ -280,6 +287,8 @@ BOOL CMFCSampleDlg::OnInitDialog()
 	m_edMask.SetWindowText(_T("45:58:0A:0A"));
 	m_edTemp.SetWindowText(_T("30"));
 	m_edLpt.SetWindowText(_T("40"));
+	m_EdAPPVersion.SetWindowText(_T("0.0.1"));
+	m_edBootAddr.SetWindowText(_T("10.10.10.10:5000"));
 	
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -516,28 +525,30 @@ void CMFCSampleDlg::OnChangeFileEdit()
 void CMFCSampleDlg::OnProgram() 
 {
 	// TODO: Add your control notification handler code here
-	//‰øÆÊîπhexÊñá‰ª∂
+	//hex…’–¥
 
 	CString strMask;
 	CString strTemp;
 	CString strLpt;
+	CString strVersionApp;
 	m_edMask.GetWindowText(strMask);
 	m_edTemp.GetWindowText(strTemp);
 	m_edLpt.GetWindowText(strLpt);
+	m_EdAPPVersion.GetWindowText(strVersionApp);
 
 	if (strMask.GetLength() != 11)
 	{
-		AfxMessageBox(_T("ËæìÂÖ•MaskIDÊ†ºÂºèÈîôËØØ!"));
+		AfxMessageBox(_T("«Î’˝»∑ÃÓ–¥MAC"));
 		return;
 	}
 	if (strMask == _T(""))
 	{
-		AfxMessageBox(_T("MaskID‰∏çËÉΩ‰∏∫Á©∫!"));
+		AfxMessageBox(_T("MAC≤ªƒ‹Œ™ø’"));
 		return;
 	}
 	if (strTemp == _T(""))
 	{
-		AfxMessageBox(_T("Ê∏©Â∫¶ÈòàÂÄº‰∏çËÉΩ‰∏∫Á©∫!"));
+		AfxMessageBox(_T("«ÎÃÓ–¥Œ¬∂»œﬁ÷∆÷µ"));
 		return;
 	}
 
@@ -545,13 +556,25 @@ void CMFCSampleDlg::OnProgram()
 	{
 		if (strLpt == _T(""))
 		{
-			AfxMessageBox(_T("Ê∏©Â∫¶ÈòàÂÄº‰∏çËÉΩ‰∏∫Á©∫!"));
+			AfxMessageBox(_T("«ÎÃÓ–¥ £”‡µÁ¡˜√≈œﬁ"));
 			return;
 		}
 	}
 	if (m_strFileName.IsEmpty())
 	{
-		AfxMessageBox(_T("ËØ∑ÈÄâÊã©hexÊñá‰ª∂!"));
+		AfxMessageBox(_T("boot≥Ã–Ú≤ªƒ‹Œ™ø’"));
+		return;
+	}
+
+	if (m_strFileName_app.IsEmpty())
+	{
+		AfxMessageBox(_T("app≥Ã–Ú≤ªƒ‹Œ™ø’"));
+		return;
+	}
+
+	if (strVersionApp.IsEmpty())
+	{
+		AfxMessageBox(_T("app∞Ê±æ∫≈≤ªƒ‹Œ™ø’"));
 		return;
 	}
 
@@ -568,7 +591,7 @@ void CMFCSampleDlg::OnProgram()
 
 	if (ConfigurationSetup() == TRUE) {
 		// hardware configuration succeeds
-		// Load the file
+		// Load the file 
 		if (!m_strFileName.IsEmpty()) {
 			StartLengthyProcess();
 			if (m_bFileLoaded == FALSE) {
@@ -577,7 +600,13 @@ void CMFCSampleDlg::OnProgram()
 				InitProgressBar("Load File");
 				LDisplayMessage("Loading file : " + m_strFileName + 
 					            " in " + m_strCurrentAreaMemory); 
-				int nReturn = ELoadFile(m_strFileName,m_iCurrentAreaMemoryID);
+				int nReturn = ELoadFile(m_strFileName, m_iCurrentAreaMemoryID);
+				m_bFileLoaded = (nReturn == 1);
+
+				nReturn = ELoadFile(m_strFileName_app, m_iCurrentAreaMemoryID);
+				m_bFileLoaded = (nReturn == 1);
+
+				nReturn = ELoadFile(m_strFileName + _T("config"), m_iCurrentAreaMemoryID);
 				m_bFileLoaded = (nReturn == 1);
 				ResetProgressBar();
 			}
@@ -807,7 +836,7 @@ void CMFCSampleDlg::EndLengthyProcess()
 
 void CMFCSampleDlg::OnBnClickedCheck1()
 {
-	// TODO: Âú®Ê≠§Ê∑ªÂä†Êéß‰ª∂ÈÄöÁü•Â§ÑÁêÜÁ®ãÂ∫è‰ª£Á†Å
+	// TODO: ????????????????????
 	m_btFirst.SetCheck(true);
 	m_btSecond.SetCheck(false);
 	m_comboHardware.SetCurSel(36);
@@ -836,7 +865,7 @@ void CMFCSampleDlg::OnBnClickedCheck1()
 
 void CMFCSampleDlg::OnBnClickedCheck2()
 {
-	// TODO: Âú®Ê≠§Ê∑ªÂä†Êéß‰ª∂ÈÄöÁü•Â§ÑÁêÜÁ®ãÂ∫è‰ª£Á†Å
+	// TODO: ????????????????????
 	m_btFirst.SetCheck(false);
 	m_btSecond.SetCheck(true);
 	m_comboHardware.SetCurSel(36);
@@ -901,26 +930,12 @@ void CMFCSampleDlg::WriteDataToStm32Hex(CString strFileName, char* pData, int nL
 		return;
 	}
 	CFile file;
-	if (!file.Open(strFileName, CFile::modeReadWrite))
+	if (!file.Open(strFileName+"config", CFile::modeCreate | CFile::modeReadWrite))
 	{
 		return;
 	}
-	long length = file.GetLength();
-	char* pBuffer = new char[length];
-	file.Read(pBuffer, length);
-	int ncmp = memcmp(pBuffer, _T(":020000040803EF\n:0CF80000"), 25);
-	if (ncmp == 0)
-	{
-		file.Seek(0, CFile::begin);
-		file.Write(pData, nLength);
-	}
-	else
-	{
-		file.Seek(0, CFile::begin);
-		file.Write(pData, nLength);
-		file.Seek(nLength, CFile::begin);
-		file.Write(pBuffer, length);
-	}
+	file.Write(pData, nLength);
+	file.Write(_T(":00000001FF"), 12);
 	file.Close();
 }
 
@@ -964,10 +979,10 @@ CString CMFCSampleDlg::DataConvertStm32(CString strMaskd, int nTempe, int nlpt)
 {
 	CString str = _T("");
 	int iPos = 0;
-	str += (strMaskd.Tokenize(_T(":"), iPos) + _T("00"));
-	str += (strMaskd.Tokenize(_T(":"), iPos) + _T("00"));
-	str += (strMaskd.Tokenize(_T(":"), iPos) + _T("00"));
-	str += (strMaskd.Tokenize(_T(":"), iPos) + _T("00"));
+	str += (strMaskd.Tokenize(_T(":"), iPos));
+	str += (strMaskd.Tokenize(_T(":"), iPos));
+	str += (strMaskd.Tokenize(_T(":"), iPos));
+	str += (strMaskd.Tokenize(_T(":"), iPos));
 
 	CString strTempe = _T("");
 	nTempe = nTempe / 0.0625;
@@ -978,8 +993,8 @@ CString CMFCSampleDlg::DataConvertStm32(CString strMaskd, int nTempe, int nlpt)
 	strLpt.Format("%04X", nlpt);
 	strLpt = strLpt.Right(2) + strLpt.Left(2);
 
-	// Ê¨≤ÂÜôÂÖ•Êï∞ÊçÆ
-	CString DataBuffer = _T("0CF80000") + str + strTempe + strLpt;
+	// ??ß’??????-----??????????-----???????????
+	CString DataBuffer = _T("04E00000") + strTempe + strLpt;
 
 
 	//0x100 - ((0x02 + 0x00 + 0x00 + 0x04 + 0x00 + 0x03) % 256) = 0xF7
@@ -988,8 +1003,8 @@ CString CMFCSampleDlg::DataConvertStm32(CString strMaskd, int nTempe, int nlpt)
 	int sum = 0;
 	for (int i = 0; i<nCount; i++)
 	{
-		CString str = DataBuffer.Mid(i * 2, 2);
-		sscanf(str, "%x", &n);
+		CString buffer01 = DataBuffer.Mid(i * 2, 2);
+		sscanf(buffer01, "%x", &n);
 		sum += n;
 	}
 	sum = 0x100 - sum % 256;
@@ -998,5 +1013,80 @@ CString CMFCSampleDlg::DataConvertStm32(CString strMaskd, int nTempe, int nlpt)
 
 	DataBuffer += strTempe;
 
+	// ??????ß’mac
+	CString mac = _T("04D00000") + str;
+	n = sum = 0;
+	nCount = mac.GetLength() / 2;
+	for (int i = 0; i<nCount; i++)
+	{
+		CString buffer01 = mac.Mid(i * 2, 2);
+		sscanf(buffer01, "%x", &n);
+		sum += n;
+	}
+	sum = 0x100 - sum % 256;
+	strTempe.Format("%02x", sum);
+	mac = _T(":") + mac + strTempe;
+	DataBuffer = DataBuffer + _T("\n") + mac;
+
+
+	// ∞Ê±æ∫≈
+	CString str_Version;
+	m_EdAPPVersion.GetWindowText(str_Version);
+	uint16_t big_v = 0, mid_v = 0, sma_v = 0;
+	int v_pos = 0;
+	
+	CString v_Buffer;
+	big_v = atoi(str_Version.Tokenize(_T("."), v_pos));
+	mid_v = atoi(str_Version.Tokenize(_T("."), v_pos));
+	sma_v = atoi(str_Version.Tokenize(_T("."), v_pos));
+	v_Buffer.Format("%04X", big_v);
+	v_Buffer = v_Buffer.Right(2) + v_Buffer.Left(2);
+	str_Version = v_Buffer;
+
+	v_Buffer.Format("%04X", mid_v);
+	v_Buffer = v_Buffer.Right(2) + v_Buffer.Left(2);
+	str_Version += v_Buffer;
+
+	v_Buffer.Format("%04X", sma_v);
+	v_Buffer = v_Buffer.Right(2) + v_Buffer.Left(2);
+	str_Version += v_Buffer;
+	str_Version += _T("000000000000");
+	str_Version = _T("0ED800000100") + str_Version;
+	n = sum = 0;
+	nCount = str_Version.GetLength() / 2;
+	for (int i = 0; i<nCount; i++)
+	{
+		CString buffer01 = str_Version.Mid(i * 2, 2);
+		sscanf(buffer01, "%x", &n);
+		sum += n;
+	}
+	sum = 0x100 - sum % 256;
+	strTempe.Format("%02x", sum);
+	str_Version = _T(":") + str_Version + strTempe;
+	DataBuffer = DataBuffer + _T("\n") + str_Version;
+
+	if (m_checkAllowUp.GetCheck() != 0)
+	{// D104  ioc F800
+		CString al_up = _T(":02D10400000029");
+		CString la_up = _T(":02F80000000006");
+		DataBuffer = DataBuffer + _T("\n") + al_up;
+		DataBuffer = DataBuffer + _T("\n") + la_up;
+	}
+
 	return _T(":020000040803EF\n:") + DataBuffer + _T("\n");
+}
+
+
+void CMFCSampleDlg::OnBnClickedButton6()
+{
+	// TODO: ????????????????????
+	CString strFilter("Intel Hex (*.hex)|*.hex|Motorola S19 (*.s19)|*.s19|All files (*.*)|*.*||");
+	// TODO: Add your control notification handler code here
+	CFileDialog fileDialog(TRUE, NULL, NULL, OFN_EXPLORER | OFN_FILEMUSTEXIST, strFilter);
+	fileDialog.m_ofn.lpstrTitle = "Enter your application file";
+	if (fileDialog.DoModal() == IDOK) {
+		m_strFileName_app = fileDialog.GetPathName();
+		m_bFileLoaded = FALSE;
+		UpdateData(FALSE);
+	}
 }

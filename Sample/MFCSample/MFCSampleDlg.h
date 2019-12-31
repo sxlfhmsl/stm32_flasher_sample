@@ -25,6 +25,7 @@ STMicroelectronics.
 #endif // _MSC_VER > 1000
 
 #include "EditWnd.h"
+#include "afxwin.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CMFCSampleDlg dialog
@@ -127,6 +128,13 @@ private:
 	//数据转换stm32
 	CString DataConvertStm32(CString strMaskd, int nTempe, int nlpt);
 
+public:
+	afx_msg void OnBnClickedButton6();
+	CString m_strFileName_app;
+	CEdit m_EdAPPVersion;
+	CButton m_checkAllowUp;
+	CButton m_btnUpAddr;
+	CEdit m_edBootAddr;
 };
 
 
