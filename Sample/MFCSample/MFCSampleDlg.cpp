@@ -289,7 +289,7 @@ BOOL CMFCSampleDlg::OnInitDialog()
 	m_edTemp.SetWindowText(_T("30"));
 	m_edLpt.SetWindowText(_T("40"));
 	m_EdAPPVersion.SetWindowText(_T("0.0.1"));
-	m_edBootAddr.SetWindowText(_T("10.10.10.10,5000"));
+	m_edBootAddr.SetWindowText(_T("255.255.255.255,12345"));
 	
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -1081,7 +1081,7 @@ CString CMFCSampleDlg::DataConvertStm32(CString strMaskd, int nTempe, int nlpt)
 		CString addr_src = _T("");
 		m_edBootAddr.GetWindowText(addr_src);
 		int addr_length = addr_src.GetLength();
-		addr_data.Format("%02X", addr_length);
+		addr_data.Format("%02X", addr_length + 1);
 		addr_data += _T("D10600");
 		for (int i = 0; i < addr_length; i++)
 		{
@@ -1089,6 +1089,11 @@ CString CMFCSampleDlg::DataConvertStm32(CString strMaskd, int nTempe, int nlpt)
 			addr_buf.Format("%02X", addr_src[i]);
 			addr_data += addr_buf;
 		}
+		
+		CString addr_buf = _T("");
+		addr_buf.Format("%02X", ':');
+		addr_data += addr_buf;
+
 		n = sum = 0;
 		nCount = addr_data.GetLength() / 2;
 		for (int i = 0; i<nCount; i++)
