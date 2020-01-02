@@ -135,6 +135,7 @@ public:
 	CButton m_checkAllowUp;
 	CButton m_btnUpAddr;
 	CEdit m_edBootAddr;
+	afx_msg void OnBnClickedCheck5();
 };
 
 

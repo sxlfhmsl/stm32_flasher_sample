@@ -177,6 +177,7 @@ BEGIN_MESSAGE_MAP(CMFCSampleDlg, CDialog)
 	ON_BN_CLICKED(IDC_CHECK1, &CMFCSampleDlg::OnBnClickedCheck1)
 	ON_BN_CLICKED(IDC_CHECK2, &CMFCSampleDlg::OnBnClickedCheck2)
 	ON_BN_CLICKED(IDC_BUTTON6, &CMFCSampleDlg::OnBnClickedButton6)
+	ON_BN_CLICKED(IDC_CHECK5, &CMFCSampleDlg::OnBnClickedCheck5)
 END_MESSAGE_MAP()
 
 long  CMFCSampleDlg::DisplayMessage(const char *szMessage)
@@ -288,7 +289,7 @@ BOOL CMFCSampleDlg::OnInitDialog()
 	m_edTemp.SetWindowText(_T("30"));
 	m_edLpt.SetWindowText(_T("40"));
 	m_EdAPPVersion.SetWindowText(_T("0.0.1"));
-	m_edBootAddr.SetWindowText(_T("10.10.10.10:5000"));
+	m_edBootAddr.SetWindowText(_T("10.10.10.10,5000"));
 	
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -1073,6 +1074,35 @@ CString CMFCSampleDlg::DataConvertStm32(CString strMaskd, int nTempe, int nlpt)
 		DataBuffer = DataBuffer + _T("\n") + la_up;
 	}
 
+	// 设置网络地址
+	if (m_btnUpAddr.GetCheck() != 0)
+	{
+		CString addr_data = _T("");
+		CString addr_src = _T("");
+		m_edBootAddr.GetWindowText(addr_src);
+		int addr_length = addr_src.GetLength();
+		addr_data.Format("%02X", addr_length);
+		addr_data += _T("D10600");
+		for (int i = 0; i < addr_length; i++)
+		{
+			CString addr_buf = _T("");
+			addr_buf.Format("%02X", addr_src[i]);
+			addr_data += addr_buf;
+		}
+		n = sum = 0;
+		nCount = addr_data.GetLength() / 2;
+		for (int i = 0; i<nCount; i++)
+		{
+			CString buffer01 = addr_data.Mid(i * 2, 2);
+			sscanf(buffer01, "%x", &n);
+			sum += n;
+		}
+		sum = 0x100 - sum % 256;
+		strTempe.Format("%02X", sum);
+		addr_data = _T(":") + addr_data + strTempe;
+		DataBuffer = DataBuffer + _T("\n") + addr_data;
+	}
+
 	return _T(":020000040803EF\n:") + DataBuffer + _T("\n");
 }
 
@@ -1088,5 +1118,19 @@ void CMFCSampleDlg::OnBnClickedButton6()
 		m_strFileName_app = fileDialog.GetPathName();
 		m_bFileLoaded = FALSE;
 		UpdateData(FALSE);
+	}
+}
+
+
+void CMFCSampleDlg::OnBnClickedCheck5()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if (m_btnUpAddr.GetCheck() != 0)
+	{
+		m_edBootAddr.SetReadOnly(FALSE);
+	}
+	else
+	{
+		m_edBootAddr.SetReadOnly(TRUE);
 	}
 }
